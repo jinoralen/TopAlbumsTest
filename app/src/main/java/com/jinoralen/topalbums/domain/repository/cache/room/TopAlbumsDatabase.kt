@@ -6,7 +6,6 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.jinoralen.topalbums.core.json.DateAdapter
 import com.jinoralen.topalbums.domain.model.Album
-import com.jinoralen.topalbums.domain.model.Genre
 import java.time.LocalDate
 
 @Database(
@@ -28,20 +27,6 @@ abstract class TopAlbumsDatabase: RoomDatabase() {
         @TypeConverter
         fun toLocalDate(value: String?): LocalDate? {
             return dateAdapter.fromJson(value)
-        }
-
-        @TypeConverter
-        fun fromGenre(value: List<Genre>): String {
-            return value.joinToString(DELIMITER) { it.name }
-        }
-
-        @TypeConverter
-        fun toGenre(value: String): List<Genre> {
-            return value.split(DELIMITER).map { Genre(it) }
-        }
-
-        companion object {
-            private const val DELIMITER = ","
         }
     }
 

@@ -3,6 +3,7 @@ package com.jinoralen.topalbums.domain.repository.cache.room
 import androidx.paging.PagingSource
 import androidx.room.*
 import com.jinoralen.topalbums.domain.model.Album
+import com.jinoralen.topalbums.domain.model.AlbumInfo
 
 @Dao
 interface AlbumDao {
@@ -18,8 +19,8 @@ interface AlbumDao {
         insertAlbums(albums)
     }
 
-    @Query("SELECT * FROM topAlbums")
-    fun getAlbums(): PagingSource<Int, Album>
+    @Query("SELECT id, artistName, name, artwork FROM topAlbums")
+    fun getAlbumsInfo(): PagingSource<Int, AlbumInfo>
 
     @Query("SELECT * FROM topAlbums WHERE :albumId == id")
     suspend fun getAlbumById(albumId: Long): Album?

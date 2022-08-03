@@ -16,12 +16,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.jinoralen.topalbums.domain.model.Album
 import com.jinoralen.topalbums.domain.model.AlbumInfo
-import com.jinoralen.topalbums.domain.model.Genre
 import com.jinoralen.topalbums.ui.theme.Grey
 import com.jinoralen.topalbums.ui.theme.TopAlbumsTheme
-import java.time.LocalDate
 
 @Preview
 @Composable

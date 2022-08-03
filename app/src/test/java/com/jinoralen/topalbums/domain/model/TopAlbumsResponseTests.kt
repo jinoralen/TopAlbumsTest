@@ -54,29 +54,29 @@ class TopAlbumsResponseTests {
         """.trimIndent()
 
         val expectedResponse = TopAlbumsResponse(
-            feed = Feed(
+            feed = FeedResponse(
                 results = listOf(
-                    Album(
+                    AlbumResponse(
                         id = 1636789969,
                         artistName = "Beyoncé",
                         name = "RENAISSANCE",
                         releaseDate = LocalDate.of(2022, 7, 29),
                         artwork = "www.example.com/art1.jpg",
                         genres = listOf(
-                            Genre(name = "Pop"),
-                            Genre(name = "Music")
+                            GenreResponse(name = "Pop"),
+                            GenreResponse(name = "Music")
                         ),
                         url = "https://music.apple.com/us/album/renaissance/1636789969"
                     ),
-                    Album(
+                    AlbumResponse(
                         id = 1622045624,
                         artistName = "Bad Bunny",
                         name = "Un Verano Sin Ti",
                         releaseDate = LocalDate.of(2022, 5,6),
                         artwork = "www.example.com/art2.jpg",
                         genres = listOf(
-                            Genre(name = "Latin"),
-                            Genre(name = "Music")
+                            GenreResponse(name = "Latin"),
+                            GenreResponse(name = "Music")
                         ),
                         url = "https://music.apple.com/us/album/un-verano-sin-ti/1622045624"
                     ),

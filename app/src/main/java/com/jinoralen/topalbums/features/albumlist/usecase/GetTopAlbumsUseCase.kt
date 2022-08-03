@@ -9,16 +9,13 @@ import arrow.retrofit.adapter.either.networkhandling.IOError
 import arrow.retrofit.adapter.either.networkhandling.UnexpectedCallError
 import com.jinoralen.topalbums.core.di.IoDispatcher
 import com.jinoralen.topalbums.core.isConnected
-import com.jinoralen.topalbums.domain.model.Album
 import com.jinoralen.topalbums.domain.model.AlbumInfo
-import com.jinoralen.topalbums.domain.model.toAlbumInfo
 import com.jinoralen.topalbums.domain.repository.cache.AlbumsCacheRepository
 import com.jinoralen.topalbums.domain.repository.network.AlbumsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class GetTopAlbumsUseCase @Inject constructor(
@@ -37,9 +34,7 @@ class GetTopAlbumsUseCase @Inject constructor(
         ),
     ){
         albumsCacheRepository.getTopAlbums()
-    }.flow.map { pagingData ->
-        pagingData.map { it.toAlbumInfo() }
-    }.flowOn(ioDispatcher)
+    }.flow.flowOn(ioDispatcher)
 
 
     @OptIn(ExperimentalPagingApi::class)
@@ -47,7 +42,7 @@ class GetTopAlbumsUseCase @Inject constructor(
         private val albumsRepository: AlbumsRepository,
         private val albumsCacheRepository: AlbumsCacheRepository,
         private val context: Context
-    ): RemoteMediator<Int, Album>() {
+    ): RemoteMediator<Int, AlbumInfo>() {
 
         override suspend fun initialize(): InitializeAction {
             return if(context.isConnected()) LAUNCH_INITIAL_REFRESH else SKIP_INITIAL_REFRESH
@@ -55,7 +50,7 @@ class GetTopAlbumsUseCase @Inject constructor(
 
         override suspend fun load(
             loadType: LoadType,
-            state: PagingState<Int, Album>
+            state: PagingState<Int, AlbumInfo>
         ): MediatorResult {
             return when(loadType){
                 LoadType.REFRESH -> refreshAlbums(state.config.pageSize)

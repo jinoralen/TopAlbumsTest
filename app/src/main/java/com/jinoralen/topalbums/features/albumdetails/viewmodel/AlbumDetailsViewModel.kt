@@ -40,7 +40,7 @@ class AlbumDetailsViewModel @Inject constructor(
                     _state.emit(AlbumDetailsState.Error(result.value.message))
                 }
                 is Either.Right -> {
-                    val (album, copyright) = result.value
+                    val album = result.value
 
                     _state.emit(AlbumDetailsState.UiState(
                         artistName = album.artistName,
@@ -48,8 +48,8 @@ class AlbumDetailsViewModel @Inject constructor(
                         releaseDateString = album.releaseDate.format(releaseDateFormatter),
                         artwork = album.artwork,
                         albumUrl = Uri.parse(album.url),
-                        copyright = copyright,
-                        genre = album.genres.firstOrNull()?.name
+                        copyright = album.albumCopyright,
+                        genre = album.genre
                     ))
                 }
             }
