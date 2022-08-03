@@ -1,7 +1,6 @@
 package com.jinoralen.topalbums
 
 import android.app.Application
-import android.os.Build
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -20,7 +19,7 @@ class TopAlbumsApplication: Application(), ImageLoaderFactory {
         }
     }
 
-    // Config Coil
+    // Config Coil to cache images
     override fun newImageLoader(): ImageLoader = ImageLoader.Builder(this)
         .crossfade(true)
         .memoryCache {
