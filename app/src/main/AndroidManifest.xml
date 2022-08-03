@@ -17,6 +17,7 @@
         tools:targetApi="32">
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="portrait"
             android:exported="true"
             android:theme="@style/Theme.TopAlbumsTest">
             <intent-filter>
