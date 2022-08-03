@@ -4,6 +4,8 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
@@ -108,7 +110,9 @@ private fun AlbumDetails(
     modifier: Modifier = Modifier,
     onClickVisitAlbum: () -> Unit = {},
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier
+        .fillMaxSize(),
+    ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(state.artwork)
@@ -118,7 +122,7 @@ private fun AlbumDetails(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(16.dp).weight(1f).verticalScroll(rememberScrollState())) {
             Text(
                 text = state.artistName,
                 style = MaterialTheme.typography.body1,
@@ -152,22 +156,23 @@ private fun AlbumDetails(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Button(
-                onClick = onClickVisitAlbum,
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Blue,
-                    contentColor = Color.White
-                ),
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(vertical = 16.dp)
+        }
+
+        Button(
+            onClick = onClickVisitAlbum,
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Blue,
+                contentColor = Color.White
+            ),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(vertical = 16.dp)
+        )
+        {
+            Text(
+                text = stringResource(id = R.string.visit_album),
+                style = MaterialTheme.typography.body2,
             )
-            {
-                Text(
-                    text = stringResource(id = R.string.visit_album),
-                    style = MaterialTheme.typography.body2,
-                )
-            }
         }
     }
 }
