@@ -16,8 +16,8 @@ class DateAdapter {
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withLocale(Locale.ENGLISH)
 
     @ToJson
-    fun toJson(@DateString date: LocalDate): String? {
-        return date.format(formatter)
+    fun toJson(@DateString date: LocalDate?): String? {
+        return date?.format(formatter)
     }
 
     @FromJson

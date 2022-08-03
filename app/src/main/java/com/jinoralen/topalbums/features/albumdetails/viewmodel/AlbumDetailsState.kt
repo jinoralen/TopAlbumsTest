@@ -12,5 +12,8 @@ sealed class AlbumDetailsState {
         val albumUrl: Uri,
         val copyright: String
     ): AlbumDetailsState()
+
     object Loading: AlbumDetailsState()
+
+    data class Error(val message: String): AlbumDetailsState()
 }

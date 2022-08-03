@@ -7,8 +7,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,13 +16,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.jinoralen.topalbums.R
 import com.jinoralen.topalbums.domain.model.AlbumInfo
-import com.jinoralen.topalbums.features.albumlist.viewmodel.AlbumListState
 import com.jinoralen.topalbums.features.albumlist.viewmodel.AlbumListViewModel
-import com.jinoralen.topalbums.ui.components.LoadingProgressBar
 import com.jinoralen.topalbums.ui.theme.TopAlbumsTheme
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import me.onebone.toolbar.CollapsingToolbarScaffold
 import me.onebone.toolbar.ScrollStrategy
 import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
@@ -72,57 +77,69 @@ fun AlbumListScreen(openDetails: (Long) -> Unit, modifier: Modifier = Modifier, 
         modifier = modifier,
         scrollStrategy = ScrollStrategy.ExitUntilCollapsed
     ) {
-        val state by viewModel.state.collectAsState()
+        val state = viewModel.state.collectAsLazyPagingItems()
 
-        AlbumListScreen(state, openDetails)
+        AlbumList(state, openDetails)
     }
 }
-
-@Composable
-private fun AlbumListScreen(
-    state: AlbumListState,
-    openDetails: (Long) -> Unit
-) {
-    when (state) {
-        AlbumListState.Loading -> {
-            LoadingProgressBar()
-        }
-        is AlbumListState.UiState -> {
-            AlbumList(state.albums, openDetails)
-        }
-    }
-}
-
 
 @Preview
 @Composable
 fun AlbumListPreview() {
     TopAlbumsTheme {
-        AlbumList(albums = listOf(
-            AlbumInfo(
-                id = 1636789969,
-                artistName = "Beyoncé",
-                name = "RENAISSANCE",
-                artwork = "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/fe/ba/43/feba43be-99e8-ad8c-9fad-1bfdea7a4e98/196589344267.jpg/100x100bb.jpg",
-            ),
-            AlbumInfo(
-                id = 1622045624,
-                artistName = "Bad Bunny",
-                name = "Un Verano Sin Ti",
-                artwork = "https://is4-ssl.mzstatic.com/image/thumb/Music122/v4/6d/31/ab/6d31abaf-7a07-05f1-13ad-72ec520b6bfb/22UMGIM67374.rgb.jpg/100x100bb.jpg",
-            ),
-        ))
+        val albums = flowOf(
+            PagingData.from(
+                listOf(
+                    AlbumInfo(
+                        id = 1636789969,
+                        artistName = "Beyoncé",
+                        name = "RENAISSANCE",
+                        artwork = "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/fe/ba/43/feba43be-99e8-ad8c-9fad-1bfdea7a4e98/196589344267.jpg/100x100bb.jpg",
+                    ),
+                    AlbumInfo(
+                        id = 1622045624,
+                        artistName = "Bad Bunny",
+                        name = "Un Verano Sin Ti",
+                        artwork = "https://is4-ssl.mzstatic.com/image/thumb/Music122/v4/6d/31/ab/6d31abaf-7a07-05f1-13ad-72ec520b6bfb/22UMGIM67374.rgb.jpg/100x100bb.jpg",
+                    ),
+                )
+            )
+        ).collectAsLazyPagingItems()
+
+        AlbumList(albums = albums)
     }
 }
 
 @Composable
-private fun AlbumList(albums: List<AlbumInfo>, openDetails: (Long) -> Unit = {}) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(8.dp)
-    ) {
-        items(albums.size) { index ->
-            AlbumCard(albums[index], Modifier.padding(8.dp), openDetails)
+private fun AlbumList(albums: LazyPagingItems<AlbumInfo>, openDetails: (Long) -> Unit = {}) {
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(albums) {
+        coroutineScope.launch {
+            albums.refresh()
+        }
+    }
+
+    val swipeRefreshState = rememberSwipeRefreshState(true)
+
+    swipeRefreshState.isRefreshing = albums.loadState.mediator?.refresh is LoadState.Loading
+
+    SwipeRefresh(state = swipeRefreshState, onRefresh = {
+        coroutineScope.launch {
+            albums.refresh()
+        }
+    }) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            contentPadding = PaddingValues(8.dp)
+        ) {
+            items(
+                count = albums.itemCount,
+            ) { index ->
+                albums[index]?.let {
+                    AlbumCard(it, Modifier.padding(8.dp), openDetails)
+                }
+            }
         }
     }
 }

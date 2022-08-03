@@ -1,6 +1,7 @@
 package com.jinoralen.topalbums.features.albumdetails.ui
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
@@ -74,6 +75,11 @@ private fun AlbumDetailsScreen(
                 }
 
             )
+        }
+        is AlbumDetailsState.Error -> {
+            val context = LocalContext.current
+            
+            Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
         }
     }
 }

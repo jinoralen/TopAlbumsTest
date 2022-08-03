@@ -2,6 +2,8 @@ package com.jinoralen.topalbums.domain.di
 
 import arrow.retrofit.adapter.either.EitherCallAdapterFactory
 import com.jinoralen.topalbums.core.json.DateAdapter
+import com.jinoralen.topalbums.domain.repository.cache.AlbumsCacheRepository
+import com.jinoralen.topalbums.domain.repository.cache.RoomAlbumsCacheRepositoryImpl
 import com.jinoralen.topalbums.domain.repository.network.AlbumDataService
 import com.jinoralen.topalbums.domain.repository.network.AlbumsRepository
 import com.jinoralen.topalbums.domain.repository.network.RemoteAlbumsRepositoryImpl
@@ -52,4 +54,7 @@ abstract class DomainModule {
 
     @Binds
     abstract fun provideRemoteRepository(albumsRepository: RemoteAlbumsRepositoryImpl): AlbumsRepository
+
+    @Binds
+    abstract fun provideCacheRepository(albumsCacheRepository: RoomAlbumsCacheRepositoryImpl): AlbumsCacheRepository
 }

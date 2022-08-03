@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import arrow.core.Either
-import com.jinoralen.topalbums.domain.repository.network.AlbumsRepository
+import com.jinoralen.topalbums.features.albumdetails.usecase.GetAlbumDetailsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AlbumDetailsViewModel @Inject constructor(
-    private val remoteDataRepository: AlbumsRepository,
+    private val albumDetailsUseCase: GetAlbumDetailsUseCase
 ): ViewModel() {
     private val _state = MutableStateFlow<AlbumDetailsState>(AlbumDetailsState.Loading)
 
@@ -33,8 +33,12 @@ class AlbumDetailsViewModel @Inject constructor(
 
     fun loadAlbumDetails(albumId: Long) {
         viewModelScope.launch {
-            when(val result = remoteDataRepository.getAlbumDetails(albumId)) {
-                is Either.Left -> {}
+            _state.emit(AlbumDetailsState.Loading)
+
+            when(val result = albumDetailsUseCase(albumId)) {
+                is Either.Left -> {
+                    _state.emit(AlbumDetailsState.Error(result.value.message))
+                }
                 is Either.Right -> {
                     val (album, copyright) = result.value
 
