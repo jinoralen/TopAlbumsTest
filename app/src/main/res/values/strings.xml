@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TopAlbumsTest</string>
+    <string name="top_albums">Top 100 Albums</string>
+    <string name="visit_album">Visit The Album</string>
 </resources>
