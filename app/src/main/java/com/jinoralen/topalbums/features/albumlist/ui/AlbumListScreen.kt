@@ -7,10 +7,10 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,13 +29,10 @@ import com.jinoralen.topalbums.features.albumlist.viewmodel.AlbumListViewModel
 import com.jinoralen.topalbums.ui.theme.TopAlbumsTheme
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import me.onebone.toolbar.CollapsingToolbarScaffold
-import me.onebone.toolbar.ScrollStrategy
-import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
+import me.onebone.toolbar.*
 
 @Composable
 fun AlbumListScreen(openDetails: (Long) -> Unit, modifier: Modifier = Modifier, viewModel: AlbumListViewModel = hiltViewModel()) {
-    val collapsingToolbarState = rememberCollapsingToolbarScaffoldState()
     val systemUiController = rememberSystemUiController()
 
     LaunchedEffect(true) {
@@ -47,40 +44,13 @@ fun AlbumListScreen(openDetails: (Long) -> Unit, modifier: Modifier = Modifier, 
         )
     }
 
-    CollapsingToolbarScaffold(
-        state = collapsingToolbarState,
-        toolbar = {
+    val state = viewModel.state.collectAsLazyPagingItems()
 
-            val minTextSize = 16
-            val maxTextSize = 34
-            val textSize = (minTextSize + (maxTextSize - minTextSize) * collapsingToolbarState.toolbarState.progress).sp
-
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(90.dp)
-                    .pin()
-            )
-
-            Text(
-                text = stringResource(id = R.string.top_albums),
-                style = MaterialTheme.typography.h1,
-                color = Color.Black,
-                modifier = Modifier
-                    .wrapContentSize()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .road(Alignment.Center, Alignment.BottomStart)
-                ,
-                fontSize = textSize,
-            )
-        },
-        modifier = modifier,
-        scrollStrategy = ScrollStrategy.ExitUntilCollapsed
-    ) {
-        val state = viewModel.state.collectAsLazyPagingItems()
-
-        AlbumList(state, openDetails)
-    }
+    AlbumList(
+        albums = state,
+        openDetails = openDetails,
+        refresh = { state.refresh() }
+    )
 }
 
 @Preview
@@ -111,35 +81,67 @@ fun AlbumListPreview() {
 }
 
 @Composable
-private fun AlbumList(albums: LazyPagingItems<AlbumInfo>, openDetails: (Long) -> Unit = {}) {
-    val coroutineScope = rememberCoroutineScope()
-
+private fun AlbumList(albums: LazyPagingItems<AlbumInfo>, openDetails: (Long) -> Unit = {}, refresh: () -> Unit = {}) {
     LaunchedEffect(albums) {
-        coroutineScope.launch {
-            albums.refresh()
+        launch {
+            refresh()
         }
     }
 
+    val collapsingToolbarState = rememberCollapsingToolbarScaffoldState()
     val swipeRefreshState = rememberSwipeRefreshState(true)
 
     swipeRefreshState.isRefreshing = albums.loadState.mediator?.refresh is LoadState.Loading
 
-    SwipeRefresh(state = swipeRefreshState, onRefresh = {
-        coroutineScope.launch {
-            albums.refresh()
-        }
-    }) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(8.dp)
+    SwipeRefresh(
+        state = swipeRefreshState,
+        onRefresh = refresh,
+        indicatorPadding = PaddingValues(top = with(LocalDensity.current){
+            collapsingToolbarState.toolbarState.height.toDp()
+        }),
+    ) {
+        CollapsingToolbarScaffold(
+            state = collapsingToolbarState,
+            toolbar = { Toolbar(collapsingToolbarState = collapsingToolbarState) },
+            scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
+            modifier = Modifier
         ) {
-            items(
-                count = albums.itemCount,
-            ) { index ->
-                albums[index]?.let {
-                    AlbumCard(it, Modifier.padding(8.dp), openDetails)
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(8.dp)
+            ) {
+                items(
+                    count = albums.itemCount,
+                ) { index ->
+                    albums[index]?.let {
+                        AlbumCard(it, Modifier.padding(8.dp), openDetails)
+                    }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun CollapsingToolbarScope.Toolbar(collapsingToolbarState: CollapsingToolbarScaffoldState){
+    val minTextSize = 16
+    val maxTextSize = 34
+    val textSize = (minTextSize + (maxTextSize - minTextSize) * collapsingToolbarState.toolbarState.progress).sp
+
+    Spacer(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(90.dp)
+    )
+
+    Text(
+        text = stringResource(id = R.string.top_albums),
+        style = MaterialTheme.typography.h1,
+        color = Color.Black,
+        modifier = Modifier
+            .wrapContentSize()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .road(Alignment.Center, Alignment.BottomStart),
+        fontSize = textSize,
+    )
 }
