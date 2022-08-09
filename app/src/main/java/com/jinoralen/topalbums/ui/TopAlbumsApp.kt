@@ -1,6 +1,7 @@
 package com.jinoralen.topalbums.ui
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -41,6 +42,7 @@ fun TopAlbumsApp() {
                         AlbumDetailsScreen(
                             albumId = albumId,
                             navController = navHostController,
+                            modifier = Modifier.navigationBarsPadding()
                         )
                     }
                 }
