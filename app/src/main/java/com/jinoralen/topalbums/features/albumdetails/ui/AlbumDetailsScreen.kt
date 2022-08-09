@@ -3,24 +3,26 @@ package com.jinoralen.topalbums.features.albumdetails.ui
 import android.net.Uri
 import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -34,6 +36,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AlbumDetailsScreen(
     albumId: Long,
+    navController: NavController,
     modifier: Modifier = Modifier,
     viewModel: AlbumDetailsViewModel = hiltViewModel(),
 ) {
@@ -55,12 +58,13 @@ fun AlbumDetailsScreen(
 
     val state by viewModel.state.collectAsState()
 
-    AlbumDetailsScreen(state, modifier)
+    AlbumDetailsScreen(state, navController, modifier)
 }
 
 @Composable
 private fun AlbumDetailsScreen(
     state: AlbumDetailsState,
+    navController: NavController,
     modifier: Modifier
 ) {
     when (state) {
@@ -74,8 +78,10 @@ private fun AlbumDetailsScreen(
                 modifier = modifier,
                 onClickVisitAlbum = {
                     CustomTabsIntent.Builder().build().launchUrl(context, state.albumUrl)
+                },
+                onBackClick = {
+                    navController.navigateUp()
                 }
-
             )
         }
         is AlbumDetailsState.Error -> {
@@ -109,20 +115,42 @@ private fun AlbumDetails(
     state: AlbumDetailsState.UiState,
     modifier: Modifier = Modifier,
     onClickVisitAlbum: () -> Unit = {},
+    onBackClick: () -> Unit = {},
 ) {
     Column(modifier = modifier
         .fillMaxSize(),
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(state.artwork)
-                .build(),
-            contentDescription = state.albumName,
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Box() {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(state.artwork)
+                    .build(),
+                contentDescription = state.albumName,
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        Column(Modifier.padding(16.dp).weight(1f).verticalScroll(rememberScrollState())) {
+            IconButton(
+                modifier = Modifier
+                    .statusBarsPadding() // add padding for size of status bar
+                    .padding(16.dp) // add extra padding on top of it
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.5f))
+                    .size(32.dp),
+                onClick = onBackClick) {
+
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_chevron_left),
+                    contentDescription = "Navigate Up",
+                )
+            }
+        }
+
+        Column(
+            Modifier
+                .padding(16.dp)
+                .weight(1f)
+                .verticalScroll(rememberScrollState())) {
             Text(
                 text = state.artistName,
                 style = MaterialTheme.typography.body1,

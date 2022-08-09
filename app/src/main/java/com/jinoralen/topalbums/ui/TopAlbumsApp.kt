@@ -38,7 +38,10 @@ fun TopAlbumsApp() {
                     )
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getLong("albumId")?.let{ albumId ->
-                        AlbumDetailsScreen(albumId)
+                        AlbumDetailsScreen(
+                            albumId = albumId,
+                            navController = navHostController,
+                        )
                     }
                 }
             }
